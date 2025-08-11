@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>سامانه پخش دارو</title>
+<style>
+  body { font-family: sans-serif; direction: rtl; max-width: 1100px; margin: auto; }
+  table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  input, select { margin: 5px; padding: 5px; }
+</style>
+</head>
+<body>
+
+<h2>لیست محصولات</h2>
+
+<div>
+  <input type="text" id="search" placeholder="جست‌وجو نام محصول...">
+  <select id="branchFilter">
+    <option value="">همه شعب</option>
+  </select>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>نام محصول</th>
+      <th>تاریخ انقضا</th>
+      <th>فرجه کالایی</th>
+      <th>فرجه زمانی</th>
+      <th>قیمت خرید</th>
+      <th>قیمت مصرف</th>
+      <th>شرکت پخش</th>
+      <th>شعبه</th>
+    </tr>
+  </thead>
+  <tbody id="productList"></tbody>
+</table>
+
+<script>
+const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7kbN6Iko2M9Z-2S1By3KNa6GelTUzWkwDajxjlbgvC68XUqQODtCIy856NNZ7KpOVZ_VTt3yv1U0K/pub?gid=0&single=true&output=csv"; // لینک CSV شیت
+
+let allProducts = [];
+
+async function fetchData() {
+  const res = await fetch(sheetURL);
+  const text = await res.text();
+  const rows = text.split("\n").map(r => r.split(","));
+  const headers = rows[0].map(h => h.trim());
+  allProducts = rows.slice(1).map(r => {
+    let obj = {};
+    headers.forEach((h,i) => obj[h] = r[i]?.trim());
+    return obj;
+  });
+
+  fillBranchFilter();
+  render(allProducts);
+}
+
+function fillBranchFilter() {
+  const branchSet = [...new Set(allProducts.map(p => p["شعبه"]))];
+  const branchSelect = document.getElementById("branchFilter");
+  branchSet.forEach(branch => {
+    let opt = document.createElement("option");
+    opt.value = branch;
+    opt.textContent = branch;
+    branchSelect.appendChild(opt);
+  });
+}
+
+function render(products) {
+  document.getElementById("productList").innerHTML = products.map(p => `
+    <tr>
+      <td>${p["نام محصول"]}</td>
+      <td>${p["تاریخ انقضا"]}</td>
+      <td>${p["فرجه کالایی"]}</td>
+      <td>${p["فرجه زمانی"]}</td>
+      <td>${p["قیمت خرید"]}</td>
+      <td>${p["قیمت مصرف"]}</td>
+      <td>${p["شرکت پخش"]}</td>
+      <td>${p["شعبه"]}</td>
+    </tr>
+  `).join('');
+}
+
+function filterData() {
+  let search = document.getElementById("search").value.trim();
+  let branch = document.getElementById("branchFilter").value;
+
+  let filtered = allProducts.filter(p => 
+    (p["نام محصول"]?.includes(search)) &&
+    (branch === "" || p["شعبه"] === branch)
+  );
+
+  render(filtered);
+}
+
+document.getElementById("search").addEventListener("input", filterData);
+document.getElementById("branchFilter").addEventListener("change", filterData);
+
+fetchData();
+</script>
+
+</body>
+</html>
