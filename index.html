@@ -24,6 +24,7 @@
 <table>
   <thead>
     <tr>
+      <th>تاریخ بروز رسانی</th>
       <th>نام محصول</th>
       <th>تاریخ انقضا</th>
       <th>فرجه کالایی</th>
@@ -71,6 +72,7 @@ function fillBranchFilter() {
 function render(products) {
   document.getElementById("productList").innerHTML = products.map(p => `
     <tr>
+      <td>${p["تاریخ بروز رسانی"]}</td>
       <td>${p["نام محصول"]}</td>
       <td>${p["تاریخ انقضا"]}</td>
       <td>${p["فرجه کالایی"]}</td>
@@ -103,3 +105,4 @@ fetchData();
 
 </body>
 </html>
+
